@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Transkription</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" type="image/png" href="favicon.png">
+
+  <!-- PWA: installierbar als echte App -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#8B1A6B">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Transkription">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+</head>
+<body>
+  <div class="bg-glow bg-glow-1"></div>
+  <div class="bg-glow bg-glow-2"></div>
+
+  <div class="container">
+    <header>
+      <img src="img/logo-maestra.png" alt="KI Maestra" class="brand-logo" style="display:block;width:150px;height:auto;margin:0 auto 1rem;">
+      <h1>Transkription</h1>
+      <p class="subtitle">Verwandle Audio & Video in Text — in Sekunden</p>
+      <div class="gradient-bar"></div>
+    </header>
+
+    <!-- Upload -->
+    <section id="upload-section" class="card fade-in">
+      <div class="card-header">
+        <span class="step-badge">1</span>
+        <h2>Datei hochladen</h2>
+      </div>
+      <div id="drop-zone" class="drop-zone">
+        <div class="drop-zone-content">
+          <div class="drop-icon-container">
+            <div class="drop-icon-ring"></div>
+            <span class="drop-icon">🎙️</span>
+          </div>
+          <p class="drop-title">Datei hierher ziehen</p>
+          <p class="drop-hint">oder klicken zum Auswählen</p>
+          <p class="drop-formats">MP3 · MP4 · M4A · WAV · OGG · WEBM</p>
+        </div>
+        <input type="file" id="file-input" accept="audio/*,video/*,.mp3,.mp4,.m4a,.wav,.ogg,.webm" hidden>
+      </div>
+      <div id="file-info" class="file-info hidden">
+        <div class="file-icon">📄</div>
+        <div class="file-details">
+          <span id="file-name"></span>
+          <span id="file-size"></span>
+        </div>
+        <button id="remove-file" class="btn-icon" title="Entfernen">&times;</button>
+      </div>
+    </section>
+
+    <!-- Options -->
+    <section id="options-section" class="card fade-in">
+      <div class="card-header">
+        <span class="step-badge">2</span>
+        <h2>Optionen</h2>
+      </div>
+      <div class="options-grid">
+        <div class="option-group">
+          <label for="language">Sprache</label>
+          <select id="language">
+            <option value="de" selected>Deutsch</option>
+            <option value="en">Englisch</option>
+            <option value="fr">Französisch</option>
+            <option value="es">Spanisch</option>
+            <option value="it">Italienisch</option>
+            <option value="pt">Portugiesisch</option>
+            <option value="nl">Niederländisch</option>
+            <option value="pl">Polnisch</option>
+            <option value="auto">Automatisch</option>
+          </select>
+        </div>
+        <div class="option-group">
+          <label for="model">Modell</label>
+          <select id="model">
+            <option value="fal-ai/wizper" selected>Wizper — blitzschnell</option>
+            <option value="fal-ai/whisper">Whisper Large v3 — mit Speaker-Trennung</option>
+          </select>
+        </div>
+      </div>
+      <div class="checkbox-row">
+        <input type="checkbox" id="timestamps">
+        <label for="timestamps">Timestamps anzeigen</label>
+      </div>
+      <p class="checkbox-hint">Zeigt Zeitstempel vor jedem Abschnitt im Transkript</p>
+      <div id="diarize-row" class="checkbox-row">
+        <input type="checkbox" id="diarize" disabled>
+        <label for="diarize">Speaker-Trennung — wer spricht wann (nur mit Whisper)</label>
+      </div>
+      <p id="diarize-hint" class="checkbox-hint">Nur mit dem Whisper-Modell verfügbar — oben „Whisper Large v3" als Modell wählen.</p>
+    </section>
+
+    <!-- DSGVO Hinweis -->
+    <section class="card card-info fade-in">
+      <div class="info-icon">ℹ️</div>
+      <div class="info-content">
+        <p class="info-title">Datenschutzhinweis</p>
+        <p class="info-text">Die Audio-Datei wird zur Transkription an <strong>fal.ai</strong> (Server in den USA) gesendet. Bei Aufnahmen mit anderen Personen bitte deren Einverständnis einholen.</p>
+      </div>
+    </section>
+
+    <!-- Start Button -->
+    <button id="start-btn" class="btn btn-primary btn-large fade-in" disabled>
+      Transkription starten
+    </button>
+
+    <!-- Progress -->
+    <section id="progress-section" class="card hidden">
+      <h2>Wird transkribiert...</h2>
+      <div class="progress-bar-container">
+        <div id="progress-bar" class="progress-bar"></div>
+      </div>
+      <p id="progress-text" class="progress-text">Vorbereitung...</p>
+    </section>
+
+    <!-- Result -->
+    <section id="result-section" class="card hidden">
+      <div class="result-header">
+        <h2>Dein Transkript</h2>
+        <div class="result-actions">
+          <button id="copy-btn" class="btn btn-secondary btn-small">Kopieren</button>
+          <button id="download-btn" class="btn btn-primary btn-small">Download .txt</button>
+        </div>
+      </div>
+      <textarea id="transcript" readonly></textarea>
+    </section>
+
+    <footer>
+      <div class="gradient-bar" style="margin-bottom: 1rem;"></div>
+      <p>Powered by fal.ai</p>
+      <p style="margin-top: 0.5rem;">&copy; 2026 <a href="https://www.manuela-ruppert.de" target="_blank" class="footer-brand">Manuela Ruppert</a> · <a href="https://maestra.de" target="_blank" class="footer-brand">KI Maestra</a></p>
+    </footer>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

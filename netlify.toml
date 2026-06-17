@@ -1,0 +1,19 @@
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+# Beim "Deploy to Netlify"-Button fragt Netlify die Teilnehmerin nach diesem Wert
+# und legt ihn als sichere Environment-Variable an (Key bleibt serverseitig):
+[template.environment]
+  FAL_KEY = "Dein fal.ai API-Key im Format KEY_ID:KEY_SECRET (von https://fal.ai/dashboard/keys)"
+
+# PWA: Service Worker und Manifest nicht aggressiv cachen
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+[[headers]]
+  for = "/manifest.json"
+  [headers.values]
+    Cache-Control = "no-cache"
