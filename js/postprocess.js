@@ -1,5 +1,6 @@
 // ==========================================
-// Nachbearbeitung: Transkript -> KI-Ausgabe
+// Nachbearbeitung: Transkript -> KI-Ausgaben
+// Mehrfachauswahl: mehrere Prompts ankreuzen, alle werden erstellt.
 // Prompts & Profil in localStorage, KI über /api/fal-llm (fal, derselbe Key).
 // ==========================================
 
@@ -21,20 +22,13 @@ const state = {
 
 // --- DOM ---
 const postSection = document.getElementById("post-section");
-const promptSelect = document.getElementById("prompt-select");
-const promptHint = document.getElementById("prompt-hint");
+const promptChecklist = document.getElementById("prompt-checklist");
 const llmModelSelect = document.getElementById("llm-model");
-const toggleEditBtn = document.getElementById("toggle-prompt-edit");
-const promptEditWrap = document.getElementById("prompt-edit-wrap");
-const promptEditEl = document.getElementById("prompt-edit");
 const generateBtn = document.getElementById("generate-btn");
 const llmProgress = document.getElementById("llm-progress");
 const llmProgressBar = document.getElementById("llm-progress-bar");
 const llmProgressText = document.getElementById("llm-progress-text");
-const llmResult = document.getElementById("llm-result");
-const llmResultTitle = document.getElementById("llm-result-title");
-const llmOutput = document.getElementById("llm-output");
-const llmCopyBtn = document.getElementById("llm-copy-btn");
+const llmResults = document.getElementById("llm-results");
 const transcriptEl = document.getElementById("transcript");
 
 // Settings modal
@@ -60,9 +54,10 @@ const peHint = document.getElementById("pe-hint");
 const pePrompt = document.getElementById("pe-prompt");
 const peSave = document.getElementById("pe-save");
 
-// --- Init ---
-renderPromptDropdown();
 const sleepP = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// --- Init ---
+renderPromptChecklist();
 
 // Hook: wird von app.js nach erfolgreicher Transkription aufgerufen
 window.onTranscriptReady = function () {
@@ -71,82 +66,133 @@ window.onTranscriptReady = function () {
 };
 
 // ==========================================
-// Prompt-Auswahl
+// Prompt-Auswahl (Checkboxen)
 // ==========================================
-function renderPromptDropdown() {
-  const prev = promptSelect.value;
-  promptSelect.innerHTML = "";
+function renderPromptChecklist() {
+  const checkedIds = new Set(
+    [...promptChecklist.querySelectorAll('input[type="checkbox"]:checked')].map((c) => c.value)
+  );
+  promptChecklist.innerHTML = "";
+
   state.prompts.forEach((p) => {
-    const o = document.createElement("option");
-    o.value = p.id;
-    o.textContent = p.title;
-    promptSelect.appendChild(o);
+    const row = document.createElement("label");
+    row.className = "check-row";
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.value = p.id;
+    if (checkedIds.has(p.id)) cb.checked = true;
+    const info = document.createElement("div");
+    info.className = "check-info";
+    const t = document.createElement("span");
+    t.className = "check-title";
+    t.textContent = p.title;
+    const h = document.createElement("span");
+    h.className = "check-hint";
+    h.textContent = p.hint || "";
+    info.appendChild(t);
+    info.appendChild(h);
+    row.appendChild(cb);
+    row.appendChild(info);
+    promptChecklist.appendChild(row);
   });
-  if (prev && state.prompts.some((p) => p.id === prev)) promptSelect.value = prev;
-  syncSelectedPrompt();
 }
 
-function currentPrompt() {
-  return state.prompts.find((p) => p.id === promptSelect.value) || state.prompts[0];
+function selectedPrompts() {
+  const ids = [...promptChecklist.querySelectorAll('input[type="checkbox"]:checked')].map((c) => c.value);
+  return state.prompts.filter((p) => ids.includes(p.id));
 }
-
-function syncSelectedPrompt() {
-  const p = currentPrompt();
-  if (!p) return;
-  promptHint.textContent = p.hint || "";
-  promptEditEl.value = p.prompt;
-}
-
-promptSelect.addEventListener("change", syncSelectedPrompt);
-
-toggleEditBtn.addEventListener("click", () => {
-  const hidden = promptEditWrap.classList.toggle("hidden");
-  toggleEditBtn.textContent = hidden
-    ? "Prompt für diesen Lauf anpassen ▾"
-    : "Prompt einklappen ▴";
-});
 
 // ==========================================
-// Generierung
+// Generierung (alle ausgewählten nacheinander)
 // ==========================================
-generateBtn.addEventListener("click", generate);
+generateBtn.addEventListener("click", generateAll);
 
-async function generate() {
+async function generateAll() {
   const transcriptText = (transcriptEl.value || "").trim();
   if (!transcriptText) {
     alert("Es gibt noch kein Transkript.");
     return;
   }
+  const chosen = selectedPrompts();
+  if (!chosen.length) {
+    alert("Bitte kreuze mindestens einen Text an.");
+    return;
+  }
 
-  const rawPrompt = (promptEditWrap.classList.contains("hidden")
-    ? currentPrompt().prompt
-    : promptEditEl.value
-  ).trim();
-
-  const finalPrompt =
-    fillProfile(rawPrompt) + "\n\n---\nTRANSKRIPT:\n" + transcriptText;
   const systemPrompt = fillProfile(state.voice);
   const model = (state.customModel || "").trim() || llmModelSelect.value;
 
   generateBtn.disabled = true;
-  llmResult.classList.add("hidden");
+  llmResults.innerHTML = "";
   llmProgress.classList.remove("hidden");
-  setLlmProgress(15, "Anfrage wird gestartet…");
+  llmProgressText.style.color = "";
 
-  try {
-    const output = await runLlm({ prompt: finalPrompt, system_prompt: systemPrompt, model });
-    llmOutput.value = output.trim();
-    llmResultTitle.textContent = currentPrompt().title;
-    llmResult.classList.remove("hidden");
-    setLlmProgress(100, "Fertig.");
-    llmProgressText.style.color = "#22c55e";
-    llmResult.scrollIntoView({ behavior: "smooth", block: "start" });
-  } catch (err) {
-    setLlmProgress(0, "Fehler: " + (err?.message || err));
-    llmProgressText.style.color = "#ef4444";
-  } finally {
-    generateBtn.disabled = false;
+  for (let i = 0; i < chosen.length; i++) {
+    const p = chosen[i];
+    const pct = Math.round(((i) / chosen.length) * 100);
+    setLlmProgress(Math.max(8, pct), `Erstelle ${i + 1}/${chosen.length}: ${p.title} …`);
+    const finalPrompt = fillProfile(p.prompt) + "\n\n---\nTRANSKRIPT:\n" + transcriptText;
+    try {
+      const output = await runLlm({ prompt: finalPrompt, system_prompt: systemPrompt, model });
+      addResultCard(p, output.trim(), false);
+    } catch (err) {
+      addResultCard(p, "Fehler: " + (err?.message || err), true);
+    }
   }
+
+  setLlmProgress(100, `Fertig – ${chosen.length} Text${chosen.length > 1 ? "e" : ""} erstellt.`);
+  llmProgressText.style.color = "#22c55e";
+  generateBtn.disabled = false;
+  if (llmResults.firstChild) llmResults.firstChild.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function addResultCard(prompt, text, isError) {
+  const card = document.createElement("div");
+  card.className = "result-card" + (isError ? " result-card-error" : "");
+
+  const head = document.createElement("div");
+  head.className = "result-header";
+  const title = document.createElement("h2");
+  title.textContent = prompt.title;
+  head.appendChild(title);
+
+  const actions = document.createElement("div");
+  actions.className = "result-actions";
+
+  const ta = document.createElement("textarea");
+  ta.className = "llm-output";
+  ta.value = text;
+
+  if (!isError) {
+    const copyBtn = mkBtn("Kopieren", "btn-secondary", async () => {
+      await navigator.clipboard.writeText(ta.value);
+      copyBtn.textContent = "Kopiert!";
+      setTimeout(() => (copyBtn.textContent = "Kopieren"), 2000);
+    });
+    const txtBtn = mkBtn(".txt", "btn-secondary", () =>
+      download(new Blob([ta.value], { type: "text/plain;charset=utf-8" }), dlName(prompt.id, "txt"))
+    );
+    const mdBtn = mkBtn(".md", "btn-secondary", () =>
+      download(new Blob([ta.value], { type: "text/markdown;charset=utf-8" }), dlName(prompt.id, "md"))
+    );
+    const docBtn = mkBtn("Word", "btn-primary", () =>
+      download(new Blob(["﻿" + docHtml(ta.value)], { type: "application/msword" }), dlName(prompt.id, "doc"))
+    );
+    actions.append(copyBtn, txtBtn, mdBtn, docBtn);
+  }
+
+  head.appendChild(actions);
+  card.appendChild(head);
+  card.appendChild(ta);
+  llmResults.appendChild(card);
+}
+
+function mkBtn(label, variant, onClick) {
+  const b = document.createElement("button");
+  b.className = `btn ${variant} btn-small`;
+  b.textContent = label;
+  b.addEventListener("click", onClick);
+  return b;
 }
 
 async function runLlm({ prompt, system_prompt, model }) {
@@ -163,8 +209,6 @@ async function runLlm({ prompt, system_prompt, model }) {
   const requestId = submit.request_id;
   const endpoint = submit.llm_endpoint || "openrouter/router";
   if (!requestId) throw new Error("Keine request_id erhalten");
-
-  setLlmProgress(45, "Modell schreibt…");
 
   const intervalMs = 3000;
   const maxTries = 80; // ~4 Min
@@ -190,10 +234,6 @@ async function runLlm({ prompt, system_prompt, model }) {
       const out = status.result?.output;
       if (typeof out !== "string") throw new Error("Kein Text in der Antwort");
       return out;
-    } else if (status.status === "IN_PROGRESS") {
-      setLlmProgress(70, "Modell schreibt…");
-    } else {
-      setLlmProgress(50, "In der Warteschlange…");
     }
   }
   throw new Error("Zeitüberschreitung. Bitte erneut versuchen.");
@@ -211,7 +251,6 @@ function parseErr(txt, code) {
 function setLlmProgress(pct, text) {
   llmProgressBar.style.width = pct + "%";
   llmProgressText.textContent = text;
-  llmProgressText.style.color = "";
 }
 
 // ==========================================
@@ -238,16 +277,10 @@ function fillProfile(text) {
 }
 
 // ==========================================
-// Kopieren & Download (.txt / .md / .doc)
+// Download-Helfer
 // ==========================================
-llmCopyBtn.addEventListener("click", async () => {
-  await navigator.clipboard.writeText(llmOutput.value);
-  llmCopyBtn.textContent = "Kopiert!";
-  setTimeout(() => (llmCopyBtn.textContent = "Kopieren"), 2000);
-});
-
-function dlName(ext) {
-  const slug = (currentPrompt().id || "ausgabe").replace(/[^a-z0-9-]/gi, "-");
+function dlName(id, ext) {
+  const slug = (id || "ausgabe").replace(/[^a-z0-9-]/gi, "-");
   const date = new Date().toISOString().slice(0, 10);
   return `${date}_${slug}.${ext}`;
 }
@@ -261,33 +294,25 @@ function download(blob, filename) {
   URL.revokeObjectURL(url);
 }
 
-document.getElementById("dl-txt").addEventListener("click", () => {
-  download(new Blob([llmOutput.value], { type: "text/plain;charset=utf-8" }), dlName("txt"));
-});
-document.getElementById("dl-md").addEventListener("click", () => {
-  download(new Blob([llmOutput.value], { type: "text/markdown;charset=utf-8" }), dlName("md"));
-});
-document.getElementById("dl-doc").addEventListener("click", () => {
-  const html =
+function docHtml(text) {
+  return (
     '<!DOCTYPE html><html><head><meta charset="utf-8"><style>' +
     "body{font-family:Calibri,Arial,sans-serif;font-size:11pt;line-height:1.5;color:#222;}" +
     "h1{font-size:18pt;color:#8B1A6B;}h2{font-size:14pt;color:#8B1A6B;}h3{font-size:12pt;color:#5E1148;}" +
-    "</style></head><body>" + mdToHtml(llmOutput.value) + "</body></html>";
-  download(new Blob(["﻿" + html], { type: "application/msword" }), dlName("doc"));
-});
+    "</style></head><body>" + mdToHtml(text) + "</body></html>"
+  );
+}
 
 function mdToHtml(md) {
-  const esc = (s) =>
-    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   const inline = (s) =>
     esc(s)
       .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
       .replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, "<em>$1</em>");
   const lines = (md || "").split(/\r?\n/);
   let html = "";
-  let list = null; // 'ul' | 'ol'
+  let list = null;
   const closeList = () => { if (list) { html += `</${list}>`; list = null; } };
-
   for (const raw of lines) {
     const line = raw.trimEnd();
     let m;
@@ -310,6 +335,29 @@ function mdToHtml(md) {
   }
   closeList();
   return html;
+}
+
+// --- Downloads für das reine Transkript (Schritt 1) ---
+function txName(ext) {
+  let base = "transkript";
+  try {
+    if (typeof selectedFile !== "undefined" && selectedFile && selectedFile.name) {
+      base = selectedFile.name.replace(/\.[^.]+$/, "") + "_transkript";
+    }
+  } catch {}
+  return `${base}.${ext}`;
+}
+const txMdBtn = document.getElementById("tx-dl-md");
+const txDocBtn = document.getElementById("tx-dl-doc");
+if (txMdBtn) {
+  txMdBtn.addEventListener("click", () =>
+    download(new Blob([transcriptEl.value], { type: "text/markdown;charset=utf-8" }), txName("md"))
+  );
+}
+if (txDocBtn) {
+  txDocBtn.addEventListener("click", () =>
+    download(new Blob(["﻿" + docHtml(transcriptEl.value)], { type: "application/msword" }), txName("doc"))
+  );
 }
 
 // ==========================================
@@ -353,12 +401,9 @@ settingsSave.addEventListener("click", () => {
   localStorage.setItem(LS.customModel, state.customModel);
   localStorage.setItem(LS.voice, state.voice);
   closeModal(settingsOverlay);
-  syncSelectedPrompt();
 });
 
-resetVoiceBtn.addEventListener("click", () => {
-  voiceEditEl.value = D.voice;
-});
+resetVoiceBtn.addEventListener("click", () => { voiceEditEl.value = D.voice; });
 
 // ==========================================
 // Prompt-Liste verwalten
@@ -382,14 +427,14 @@ function renderPromptList() {
         state.prompts.splice(idx, 1);
         persistPrompts();
         renderPromptList();
-        renderPromptDropdown();
+        renderPromptChecklist();
       }
     });
     promptListEl.appendChild(row);
   });
 }
 
-let editingIndex = -1; // -1 = neuer Prompt
+let editingIndex = -1;
 
 function editPrompt(idx) {
   editingIndex = idx;
@@ -404,8 +449,7 @@ addPromptBtn.addEventListener("click", () => {
   editingIndex = -1;
   peTitle.value = "";
   peHint.value = "";
-  pePrompt.value =
-    "AUFGABE: \n\nKONTEXT: \n\nGRENZEN: \n\nQUALITÄT: ";
+  pePrompt.value = "AUFGABE: \n\nKONTEXT: \n\nGRENZEN: \n\nQUALITÄT: ";
   openModal(peOverlay);
 });
 
@@ -427,7 +471,7 @@ peSave.addEventListener("click", () => {
   }
   persistPrompts();
   renderPromptList();
-  renderPromptDropdown();
+  renderPromptChecklist();
   closeModal(peOverlay);
 });
 
@@ -436,13 +480,11 @@ resetPromptsBtn.addEventListener("click", () => {
     state.prompts = deepClone(D.prompts);
     persistPrompts();
     renderPromptList();
-    renderPromptDropdown();
+    renderPromptChecklist();
   }
 });
 
-function persistPrompts() {
-  saveJSON(LS.prompts, state.prompts);
-}
+function persistPrompts() { saveJSON(LS.prompts, state.prompts); }
 
 // ==========================================
 // Helpers
@@ -455,9 +497,5 @@ function loadJSON(key, fallback) {
     return fallback;
   }
 }
-function saveJSON(key, obj) {
-  localStorage.setItem(key, JSON.stringify(obj));
-}
-function deepClone(obj) {
-  return JSON.parse(JSON.stringify(obj));
-}
+function saveJSON(key, obj) { localStorage.setItem(key, JSON.stringify(obj)); }
+function deepClone(obj) { return JSON.parse(JSON.stringify(obj)); }

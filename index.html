@@ -126,7 +126,9 @@
         <h2>Dein Transkript</h2>
         <div class="result-actions">
           <button id="copy-btn" class="btn btn-secondary btn-small">Kopieren</button>
-          <button id="download-btn" class="btn btn-primary btn-small">Download .txt</button>
+          <button id="download-btn" class="btn btn-secondary btn-small">.txt</button>
+          <button id="tx-dl-md" class="btn btn-secondary btn-small">.md</button>
+          <button id="tx-dl-doc" class="btn btn-primary btn-small">Word</button>
         </div>
       </div>
       <textarea id="transcript" readonly></textarea>
@@ -139,33 +141,24 @@
         <h2>Weiterverarbeiten</h2>
         <button id="settings-btn" class="btn btn-secondary btn-small post-settings-btn" title="Prompts &amp; Profil">⚙ Prompts &amp; Profil</button>
       </div>
-      <p class="post-intro">Mach aus dem Transkript einen fertigen Text – mit deinen Prompts, in deiner Stimme.</p>
+      <p class="post-intro">Kreuze an, welche Texte du möchtest – sie werden alle auf einmal erstellt, in deiner Stimme.</p>
 
-      <div class="options-grid">
-        <div class="option-group">
-          <label for="prompt-select">Prompt</label>
-          <select id="prompt-select"></select>
-        </div>
-        <div class="option-group">
-          <label for="llm-model">Modell</label>
-          <select id="llm-model">
-            <option value="anthropic/claude-sonnet-4.6" selected>Claude Sonnet 4.6 — Standard</option>
-            <option value="anthropic/claude-haiku-4.5">Claude Haiku 4.5 — schnell</option>
-          </select>
-        </div>
+      <div class="option-group" style="margin-bottom:1rem;">
+        <label>Welche Texte möchtest du?</label>
+        <div id="prompt-checklist" class="prompt-checklist"></div>
       </div>
 
-      <p id="prompt-hint" class="checkbox-hint" style="padding-left:0;"></p>
-
-      <div class="post-toggle-row">
-        <button id="toggle-prompt-edit" class="btn-link" type="button">Prompt für diesen Lauf anpassen ▾</button>
-      </div>
-      <div id="prompt-edit-wrap" class="hidden">
-        <textarea id="prompt-edit" class="prompt-textarea" spellcheck="false"></textarea>
-        <p class="checkbox-hint" style="padding-left:0;">Eckige Platzhalter wie <code>[DEIN ANGEBOT]</code> hier ausfüllen. <code>{{name}}</code>, <code>{{signatur}}</code> &amp; <code>{{firma}}</code> kommen automatisch aus deinem Profil. Das Transkript wird automatisch angehängt.</p>
+      <div class="option-group" style="margin-bottom:0.5rem;">
+        <label for="llm-model">Modell</label>
+        <select id="llm-model">
+          <option value="anthropic/claude-sonnet-4.6" selected>Claude Sonnet 4.6 — Standard</option>
+          <option value="anthropic/claude-haiku-4.5">Claude Haiku 4.5 — schnell</option>
+        </select>
       </div>
 
-      <button id="generate-btn" class="btn btn-primary btn-large" style="margin-top:1rem;">Text erstellen</button>
+      <p class="checkbox-hint" style="padding-left:0;">Eckige Platzhalter wie <code>[DEIN ANGEBOT]</code> kannst du dauerhaft unter „⚙ Prompts &amp; Profil" hinterlegen. <code>{{name}}</code>/<code>{{signatur}}</code>/<code>{{firma}}</code> kommen aus deinem Profil. Das Transkript wird automatisch angehängt.</p>
+
+      <button id="generate-btn" class="btn btn-primary btn-large" style="margin-top:0.5rem;">Ausgewählte Texte erstellen</button>
 
       <!-- LLM Progress -->
       <div id="llm-progress" class="hidden" style="margin-top:0.5rem;">
@@ -175,19 +168,8 @@
         <p id="llm-progress-text" class="progress-text">Wird erstellt…</p>
       </div>
 
-      <!-- LLM Result -->
-      <div id="llm-result" class="hidden" style="margin-top:1.25rem;">
-        <div class="result-header">
-          <h2 id="llm-result-title">Ergebnis</h2>
-          <div class="result-actions">
-            <button id="llm-copy-btn" class="btn btn-secondary btn-small">Kopieren</button>
-            <button id="dl-txt" class="btn btn-secondary btn-small">.txt</button>
-            <button id="dl-md" class="btn btn-secondary btn-small">.md</button>
-            <button id="dl-doc" class="btn btn-primary btn-small">Word</button>
-          </div>
-        </div>
-        <textarea id="llm-output" class="llm-output"></textarea>
-      </div>
+      <!-- LLM Ergebnis-Karten (dynamisch) -->
+      <div id="llm-results"></div>
     </section>
 
     <footer>

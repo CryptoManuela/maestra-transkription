@@ -1,6 +1,6 @@
 // Service Worker — macht die App installierbar und offline-fähig (nur die Hülle).
 // WICHTIG: /api/-Aufrufe (Transkription, Upload) werden NIE gecacht.
-const CACHE = "transkription-v2";
+const CACHE = "transkription-v3";
 const ASSETS = [
   "./",
   "./index.html",

@@ -878,6 +878,79 @@ code {
   flex-shrink: 0;
 }
 
+/* Prompt-Checkliste (Mehrfachauswahl) */
+.prompt-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.check-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.7rem 0.9rem;
+  background: var(--card-bg-solid);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.check-row:hover {
+  border-color: var(--berry-light);
+  background: var(--berry-ultra-light);
+}
+
+.check-row input[type="checkbox"] {
+  accent-color: var(--berry);
+  width: 17px;
+  height: 17px;
+  margin-top: 2px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.check-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.check-title {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+.check-hint {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+/* Ergebnis-Karten je erzeugtem Text */
+.result-card {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+}
+
+.result-card:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.result-card .result-header h2 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--berry);
+}
+
+.result-card-error .llm-output {
+  border-color: var(--error);
+  color: var(--error);
+}
+
 /* Responsive */
 @media (max-width: 600px) {
   .container {
