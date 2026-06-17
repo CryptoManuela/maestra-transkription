@@ -878,6 +878,22 @@ code {
   flex-shrink: 0;
 }
 
+.field-input {
+  width: 100%;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  outline: none;
+  background: var(--card-bg-solid);
+  transition: border-color 0.2s;
+}
+
+.field-input:focus {
+  border-color: var(--berry);
+}
+
 /* Prompt-Checkliste (Mehrfachauswahl) */
 .prompt-checklist {
   display: flex;

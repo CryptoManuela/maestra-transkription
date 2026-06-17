@@ -24,6 +24,7 @@ const state = {
 const postSection = document.getElementById("post-section");
 const promptChecklist = document.getElementById("prompt-checklist");
 const llmModelSelect = document.getElementById("llm-model");
+const contactNameEl = document.getElementById("contact-name");
 const generateBtn = document.getElementById("generate-btn");
 const llmProgress = document.getElementById("llm-progress");
 const llmProgressBar = document.getElementById("llm-progress-bar");
@@ -121,6 +122,7 @@ async function generateAll() {
 
   const systemPrompt = fillProfile(state.voice);
   const model = (state.customModel || "").trim() || llmModelSelect.value;
+  const kontakt = (contactNameEl.value || "").trim() || "(nicht angegeben)";
 
   generateBtn.disabled = true;
   llmResults.innerHTML = "";
@@ -131,7 +133,9 @@ async function generateAll() {
     const p = chosen[i];
     const pct = Math.round(((i) / chosen.length) * 100);
     setLlmProgress(Math.max(8, pct), `Erstelle ${i + 1}/${chosen.length}: ${p.title} …`);
-    const finalPrompt = fillProfile(p.prompt) + "\n\n---\nTRANSKRIPT:\n" + transcriptText;
+    const finalPrompt =
+      fillProfile(p.prompt).replaceAll("{{kontakt}}", kontakt) +
+      "\n\n---\nTRANSKRIPT:\n" + transcriptText;
     try {
       const output = await runLlm({ prompt: finalPrompt, system_prompt: systemPrompt, model });
       addResultCard(p, output.trim(), false);

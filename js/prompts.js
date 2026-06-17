@@ -56,7 +56,7 @@ QUALITÄT: Fragen nach Thema gruppieren, jede als "F: …" mit direkter Antwort.
     hint: "Strukturierte 10-Punkte-Notiz fürs CRM. Interne Gedankenstütze, kein schöner Text.",
     prompt: `AUFGABE: Erstelle aus dem Transkript eine strukturierte Gesprächsnotiz – eine Gedankenstütze für mich, damit ich beim nächsten Kontakt sofort anknüpfen kann. Kein schön geschriebener Text.
 
-KONTEXT: Interne Notiz nur für mich. Mein Background: [EIN SATZ ÜBER DICH]. Trenne sauber, wer was gesagt hat – meine Aussagen nie der Gesprächspartnerin zuschreiben. Den korrekten Namen nimm aus dem Dateinamen, nicht aus dem Transkript.
+KONTEXT: Interne Notiz nur für mich. Mein Background: [EIN SATZ ÜBER DICH]. Trenne sauber, wer was gesagt hat – meine Aussagen nie der Gesprächspartnerin zuschreiben. Name der Gesprächspartnerin: {{kontakt}} – steht dort "(nicht angegeben)", nimm den Namen aus dem Gespräch.
 
 GRENZEN: Übernimm nur, was wirklich gesagt wurde. Nichts ergänzen, nichts interpretieren. Punkte, die nicht vorkamen, mit "—" markieren – nie mit Vermutung füllen. Keine Zahl, kein Preis, kein Name geraten.
 
@@ -93,7 +93,7 @@ QUALITÄT: Mittlere Tiefe. Drei konkrete Stärken und zwei, die beim nächsten M
     hint: "Persönlicher 1:1-Recap: was ihr erarbeitet habt und ihr nächster Schritt.",
     prompt: `AUFGABE: Schreib aus dem Transkript einen Recap für meine Kund:in – sie soll wissen, was wir erarbeitet haben und was ihr nächster Schritt ist.
 
-KONTEXT: 1:1-Coaching, Premium-Niveau. Sprich sie mit Vornamen an (aus dem Dateinamen), Du-Form, auf Augenhöhe. Sie will die Essenz ihrer Session, kein Protokoll.
+KONTEXT: 1:1-Coaching, Premium-Niveau. Sprich sie mit Vornamen an, Du-Form, auf Augenhöhe. Name der Kund:in: {{kontakt}} – steht dort "(nicht angegeben)", leite den Vornamen aus dem Gespräch ab. Sie will die Essenz ihrer Session, kein Protokoll.
 
 GRENZEN: Nur was wir besprochen haben, nichts dazudichten. Im Zweifel weglassen.
 
@@ -104,22 +104,6 @@ QUALITÄT (Struktur):
 - Tipps & Tools (nur mit Begründung, nie nackte Tool-Namen)
 - Dein nächster Schritt (nur, was ich als Hausaufgabe genannt habe; sonst weglassen)
 - Signatur: {{signatur}}`,
-  },
-  {
-    id: "lead-einschaetzung",
-    title: "Gespräch → Lead-Einschätzung",
-    hint: "Passung zu deinen Angeboten, Temperatur heiß/warm/kalt, nächster Schritt.",
-    prompt: `AUFGABE: Schätze anhand des Transkripts ein, wie gut diese Interessentin zu meinen Angeboten passt, und empfiehl mir einen nächsten Schritt.
-
-KONTEXT: Meine Angebote: [AUFLISTEN, JE EIN SATZ, MIT PREISRAHMEN]. Ich will wissen, wo sie hineinpasst und wie ernst es ihr ist.
-
-GRENZEN: Nur auf Basis dessen, was im Gespräch tatsächlich vorkam. Budget, Dringlichkeit und Entscheidungsmacht nur bewerten, wenn es Signale dafür gab – sonst als "unklar" markieren. Nichts schönrechnen.
-
-QUALITÄT:
-- Passung zu welchem Angebot, mit kurzer Begründung
-- Temperatur: heiß / warm / kalt – und warum (mit Beleg aus dem Gespräch)
-- Was dafür spricht, was dagegen
-- Mein sinnvollster nächster Schritt mit Zeitvorschlag`,
   },
   {
     id: "shownotes",
