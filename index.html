@@ -132,6 +132,64 @@
       <textarea id="transcript" readonly></textarea>
     </section>
 
+    <!-- Nachbearbeitung (KI) -->
+    <section id="post-section" class="card hidden">
+      <div class="card-header">
+        <span class="step-badge">3</span>
+        <h2>Weiterverarbeiten</h2>
+        <button id="settings-btn" class="btn btn-secondary btn-small post-settings-btn" title="Prompts &amp; Profil">⚙ Prompts &amp; Profil</button>
+      </div>
+      <p class="post-intro">Mach aus dem Transkript einen fertigen Text – mit deinen Prompts, in deiner Stimme.</p>
+
+      <div class="options-grid">
+        <div class="option-group">
+          <label for="prompt-select">Prompt</label>
+          <select id="prompt-select"></select>
+        </div>
+        <div class="option-group">
+          <label for="llm-model">Modell</label>
+          <select id="llm-model">
+            <option value="anthropic/claude-sonnet-4.6" selected>Claude Sonnet 4.6 — Standard</option>
+            <option value="anthropic/claude-haiku-4.5">Claude Haiku 4.5 — schnell</option>
+          </select>
+        </div>
+      </div>
+
+      <p id="prompt-hint" class="checkbox-hint" style="padding-left:0;"></p>
+
+      <div class="post-toggle-row">
+        <button id="toggle-prompt-edit" class="btn-link" type="button">Prompt für diesen Lauf anpassen ▾</button>
+      </div>
+      <div id="prompt-edit-wrap" class="hidden">
+        <textarea id="prompt-edit" class="prompt-textarea" spellcheck="false"></textarea>
+        <p class="checkbox-hint" style="padding-left:0;">Eckige Platzhalter wie <code>[DEIN ANGEBOT]</code> hier ausfüllen. <code>{{name}}</code>, <code>{{signatur}}</code> &amp; <code>{{firma}}</code> kommen automatisch aus deinem Profil. Das Transkript wird automatisch angehängt.</p>
+      </div>
+
+      <button id="generate-btn" class="btn btn-primary btn-large" style="margin-top:1rem;">Text erstellen</button>
+
+      <!-- LLM Progress -->
+      <div id="llm-progress" class="hidden" style="margin-top:0.5rem;">
+        <div class="progress-bar-container">
+          <div id="llm-progress-bar" class="progress-bar"></div>
+        </div>
+        <p id="llm-progress-text" class="progress-text">Wird erstellt…</p>
+      </div>
+
+      <!-- LLM Result -->
+      <div id="llm-result" class="hidden" style="margin-top:1.25rem;">
+        <div class="result-header">
+          <h2 id="llm-result-title">Ergebnis</h2>
+          <div class="result-actions">
+            <button id="llm-copy-btn" class="btn btn-secondary btn-small">Kopieren</button>
+            <button id="dl-txt" class="btn btn-secondary btn-small">.txt</button>
+            <button id="dl-md" class="btn btn-secondary btn-small">.md</button>
+            <button id="dl-doc" class="btn btn-primary btn-small">Word</button>
+          </div>
+        </div>
+        <textarea id="llm-output" class="llm-output"></textarea>
+      </div>
+    </section>
+
     <footer>
       <div class="gradient-bar" style="margin-bottom: 1rem;"></div>
       <p>Powered by fal.ai</p>
@@ -139,6 +197,97 @@
     </footer>
   </div>
 
+  <!-- Einstellungen: Profil, Prompts, Modell -->
+  <div id="settings-overlay" class="overlay hidden">
+    <div class="modal">
+      <div class="modal-head">
+        <h2>Prompts &amp; Profil</h2>
+        <button id="settings-close" class="btn-icon" title="Schließen">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Tabs -->
+        <div class="modal-tabs">
+          <button class="mtab active" data-tab="profil">Profil</button>
+          <button class="mtab" data-tab="prompts">Prompts</button>
+          <button class="mtab" data-tab="erweitert">Erweitert</button>
+        </div>
+
+        <!-- Profil -->
+        <div class="mpanel active" data-panel="profil">
+          <p class="modal-hint">Fließt automatisch in jede Ausgabe ein.</p>
+          <div class="option-group modal-field">
+            <label for="profile-name">Dein Name</label>
+            <input type="text" id="profile-name" placeholder="z. B. Manuela">
+          </div>
+          <div class="option-group modal-field">
+            <label for="profile-signature">Signatur</label>
+            <input type="text" id="profile-signature" placeholder="z. B. Alles Liebe, deine Manuela">
+          </div>
+          <div class="option-group modal-field">
+            <label for="profile-firma">Firma (optional)</label>
+            <input type="text" id="profile-firma" placeholder="z. B. Maestra">
+          </div>
+        </div>
+
+        <!-- Prompts -->
+        <div class="mpanel" data-panel="prompts">
+          <p class="modal-hint">Bearbeite, lösche oder ergänze deine Prompts. Das Transkript wird automatisch angehängt.</p>
+          <div id="prompt-list" class="prompt-list"></div>
+          <button id="add-prompt" class="btn btn-secondary btn-small" type="button">+ Neuer Prompt</button>
+          <button id="reset-prompts" class="btn btn-secondary btn-small btn-danger" type="button">Auf Standard zurücksetzen</button>
+        </div>
+
+        <!-- Erweitert -->
+        <div class="mpanel" data-panel="erweitert">
+          <div class="option-group modal-field">
+            <label for="custom-model">Modell-ID (überschreibt die Auswahl)</label>
+            <input type="text" id="custom-model" placeholder="leer = Auswahl im Hauptfenster">
+            <p class="modal-hint" style="margin-top:0.4rem;">Ändern sich die Modelle, hier die neue ID eintragen – z. B. <code>anthropic/claude-opus-4.8</code>. Läuft über fal (openrouter/router).</p>
+          </div>
+          <div class="option-group modal-field">
+            <label for="voice-edit">Stimme &amp; Tabus (System-Prompt für alle Ausgaben)</label>
+            <textarea id="voice-edit" class="prompt-textarea" spellcheck="false"></textarea>
+          </div>
+          <button id="reset-voice" class="btn btn-secondary btn-small btn-danger" type="button">Stimme zurücksetzen</button>
+        </div>
+      </div>
+
+      <div class="modal-foot">
+        <button id="settings-save" class="btn btn-primary">Speichern</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Prompt-Editor (für einzelnen Prompt) -->
+  <div id="prompt-editor-overlay" class="overlay hidden">
+    <div class="modal">
+      <div class="modal-head">
+        <h2 id="prompt-editor-title">Prompt bearbeiten</h2>
+        <button id="prompt-editor-close" class="btn-icon" title="Schließen">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="option-group modal-field">
+          <label for="pe-title">Titel</label>
+          <input type="text" id="pe-title" placeholder="z. B. Gespräch → Notiz">
+        </div>
+        <div class="option-group modal-field">
+          <label for="pe-hint">Kurzbeschreibung</label>
+          <input type="text" id="pe-hint" placeholder="Ein Satz, was der Prompt macht">
+        </div>
+        <div class="option-group modal-field">
+          <label for="pe-prompt">Prompt</label>
+          <textarea id="pe-prompt" class="prompt-textarea" style="min-height:280px;" spellcheck="false"></textarea>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button id="pe-save" class="btn btn-primary">Übernehmen</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/prompts.js"></script>
   <script src="js/app.js"></script>
+  <script src="js/postprocess.js"></script>
 </body>
 </html>
