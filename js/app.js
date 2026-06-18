@@ -446,6 +446,10 @@ function showResult(text) {
   resultSection.classList.remove("hidden");
   updateProgress(100, "Transkription abgeschlossen!");
   progressText.style.color = "#22c55e";
+  // Nachbearbeitung freischalten (postprocess.js)
+  if (typeof window.onTranscriptReady === "function") {
+    window.onTranscriptReady(text);
+  }
 }
 
 copyBtn.addEventListener("click", async () => {

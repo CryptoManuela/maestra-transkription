@@ -643,6 +643,330 @@ footer .gradient-bar {
   color: var(--berry);
 }
 
+/* ==========================================
+   Nachbearbeitung (KI)
+   ========================================== */
+.post-intro {
+  font-size: 0.85rem !important;
+  color: var(--text-muted) !important;
+  margin-bottom: 1rem !important;
+}
+
+.post-settings-btn {
+  margin-left: auto;
+}
+
+.post-toggle-row {
+  margin-top: 0.75rem;
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: var(--berry);
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
+
+.btn-link:hover {
+  color: var(--berry-dark);
+}
+
+.prompt-textarea,
+.llm-output {
+  width: 100%;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.85rem;
+  line-height: 1.7;
+  resize: vertical;
+  outline: none;
+  background: var(--card-bg-solid);
+  color: var(--text-body);
+  transition: border-color 0.2s;
+}
+
+.prompt-textarea {
+  min-height: 200px;
+  margin-top: 0.6rem;
+}
+
+.llm-output {
+  min-height: 320px;
+  background: var(--bg);
+}
+
+.prompt-textarea:focus,
+.llm-output:focus {
+  border-color: var(--berry);
+}
+
+code {
+  background: var(--berry-ultra-light);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 0.85em;
+  color: var(--berry-dark);
+}
+
+/* ==========================================
+   Modal / Overlay
+   ========================================== */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(45, 26, 40, 0.45);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+}
+
+.modal {
+  background: var(--bg);
+  border-radius: var(--radius);
+  width: 100%;
+  max-width: 600px;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 24px 64px rgba(45, 26, 40, 0.3);
+  animation: fadeInUp 0.25s ease-out both;
+}
+
+.modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-head h2 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--berry);
+}
+
+.modal-body {
+  padding: 1.25rem 1.5rem;
+  overflow-y: auto;
+}
+
+.modal-foot {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.modal-hint {
+  font-size: 0.8rem !important;
+  color: var(--text-muted) !important;
+  margin-bottom: 1rem !important;
+}
+
+.modal-field {
+  margin-bottom: 1rem;
+}
+
+.modal-field label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.4rem;
+  display: block;
+}
+
+.modal-field input {
+  width: 100%;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  outline: none;
+  background: var(--card-bg-solid);
+  transition: border-color 0.2s;
+}
+
+.modal-field input:focus {
+  border-color: var(--berry);
+}
+
+.modal-tabs {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.mtab {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-family: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  margin-bottom: -1px;
+}
+
+.mtab.active {
+  color: var(--berry);
+  border-bottom-color: var(--berry);
+}
+
+.mpanel { display: none; }
+.mpanel.active { display: block; }
+
+/* Prompt-Liste im Manager */
+.prompt-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.prompt-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0.9rem;
+  background: var(--card-bg-solid);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.prompt-row-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.prompt-row-title {
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: var(--text);
+}
+
+.prompt-row-hint {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.prompt-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.field-input {
+  width: 100%;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  outline: none;
+  background: var(--card-bg-solid);
+  transition: border-color 0.2s;
+}
+
+.field-input:focus {
+  border-color: var(--berry);
+}
+
+/* Prompt-Checkliste (Mehrfachauswahl) */
+.prompt-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.check-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.7rem 0.9rem;
+  background: var(--card-bg-solid);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.check-row:hover {
+  border-color: var(--berry-light);
+  background: var(--berry-ultra-light);
+}
+
+.check-row input[type="checkbox"] {
+  accent-color: var(--berry);
+  width: 17px;
+  height: 17px;
+  margin-top: 2px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.check-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.check-title {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+.check-hint {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+/* Ergebnis-Karten je erzeugtem Text */
+.result-card {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+}
+
+.result-card:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.result-card .result-header h2 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--berry);
+}
+
+.result-card-error .llm-output {
+  border-color: var(--error);
+  color: var(--error);
+}
+
 /* Responsive */
 @media (max-width: 600px) {
   .container {
