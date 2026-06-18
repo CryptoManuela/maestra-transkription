@@ -223,6 +223,12 @@
           <div id="prompt-list" class="prompt-list"></div>
           <button id="add-prompt" class="btn btn-secondary btn-small" type="button">+ Neuer Prompt</button>
           <button id="reset-prompts" class="btn btn-secondary btn-small btn-danger" type="button">Auf Standard zurücksetzen</button>
+
+          <hr style="border:none;border-top:1px solid var(--border);margin:1.25rem 0 1rem;">
+          <p class="modal-hint">Deine Prompts liegen sicher auf deiner eigenen App (Server) und sind nach Browser- oder Gerätewechsel wieder da. Zusätzliche Sicherung als Datei:</p>
+          <button id="export-data" class="btn btn-secondary btn-small" type="button">Sicherung exportieren</button>
+          <button id="import-data-btn" class="btn btn-secondary btn-small" type="button">Sicherung importieren</button>
+          <input type="file" id="import-file" accept="application/json,.json" hidden>
         </div>
 
         <!-- Erweitert -->

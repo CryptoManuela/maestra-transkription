@@ -46,6 +46,9 @@ const promptListEl = document.getElementById("prompt-list");
 const addPromptBtn = document.getElementById("add-prompt");
 const resetPromptsBtn = document.getElementById("reset-prompts");
 const resetVoiceBtn = document.getElementById("reset-voice");
+const exportBtn = document.getElementById("export-data");
+const importBtn = document.getElementById("import-data-btn");
+const importFile = document.getElementById("import-file");
 
 // Prompt editor modal
 const peOverlay = document.getElementById("prompt-editor-overlay");
@@ -59,6 +62,55 @@ const sleepP = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // --- Init ---
 renderPromptChecklist();
+serverLoad(); // serverseitigen Stand (Netlify Blobs) nachladen, falls vorhanden
+
+// ==========================================
+// Server-Speicher (Netlify Blobs) – best effort, fällt auf localStorage zurück
+// ==========================================
+async function serverLoad() {
+  let data;
+  try {
+    const r = await fetch("/api/data-load");
+    if (!r.ok) return;
+    data = await r.json();
+  } catch {
+    return;
+  }
+  if (!data || data.error) return;
+  const hasServer = data.prompts || data.profile || data.voice || data.customModel;
+  if (hasServer) {
+    if (Array.isArray(data.prompts)) state.prompts = data.prompts;
+    if (data.profile) state.profile = data.profile;
+    if (typeof data.voice === "string") state.voice = data.voice;
+    if (typeof data.customModel === "string") state.customModel = data.customModel;
+    saveJSON(LS.profile, state.profile);
+    saveJSON(LS.prompts, state.prompts);
+    localStorage.setItem(LS.voice, state.voice);
+    localStorage.setItem(LS.customModel, state.customModel);
+    renderPromptChecklist();
+  } else {
+    // Server noch leer -> aktuellen lokalen Stand hochschieben (Erstmigration)
+    serverSave();
+  }
+}
+
+async function serverSave() {
+  const bundle = {
+    profile: state.profile,
+    voice: state.voice,
+    prompts: state.prompts,
+    customModel: state.customModel,
+  };
+  try {
+    await fetch("/api/data-save", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(bundle),
+    });
+  } catch {
+    /* offline o. ä. – lokaler Stand bleibt erhalten */
+  }
+}
 
 // Hook: wird von app.js nach erfolgreicher Transkription aufgerufen
 window.onTranscriptReady = function () {
@@ -404,6 +456,7 @@ settingsSave.addEventListener("click", () => {
   saveJSON(LS.profile, state.profile);
   localStorage.setItem(LS.customModel, state.customModel);
   localStorage.setItem(LS.voice, state.voice);
+  serverSave();
   closeModal(settingsOverlay);
 });
 
@@ -488,7 +541,53 @@ resetPromptsBtn.addEventListener("click", () => {
   }
 });
 
-function persistPrompts() { saveJSON(LS.prompts, state.prompts); }
+function persistPrompts() { saveJSON(LS.prompts, state.prompts); serverSave(); }
+
+// ==========================================
+// Sicherung exportieren / importieren (JSON-Datei)
+// ==========================================
+exportBtn.addEventListener("click", () => {
+  const bundle = {
+    profile: state.profile,
+    voice: state.voice,
+    prompts: state.prompts,
+    customModel: state.customModel,
+    _exportiert: new Date().toISOString(),
+  };
+  const name = `maestra-prompts-sicherung_${new Date().toISOString().slice(0, 10)}.json`;
+  download(new Blob([JSON.stringify(bundle, null, 2)], { type: "application/json" }), name);
+});
+
+importBtn.addEventListener("click", () => importFile.click());
+
+importFile.addEventListener("change", async () => {
+  const f = importFile.files[0];
+  if (!f) return;
+  try {
+    const data = JSON.parse(await f.text());
+    if (Array.isArray(data.prompts)) state.prompts = data.prompts;
+    if (data.profile) state.profile = data.profile;
+    if (typeof data.voice === "string") state.voice = data.voice;
+    if (typeof data.customModel === "string") state.customModel = data.customModel;
+    saveJSON(LS.profile, state.profile);
+    saveJSON(LS.prompts, state.prompts);
+    localStorage.setItem(LS.voice, state.voice);
+    localStorage.setItem(LS.customModel, state.customModel);
+    serverSave();
+    renderPromptList();
+    renderPromptChecklist();
+    profileNameEl.value = state.profile.name || "";
+    profileSignatureEl.value = state.profile.signatur || "";
+    profileFirmaEl.value = state.profile.firma || "";
+    customModelEl.value = state.customModel || "";
+    voiceEditEl.value = state.voice || "";
+    alert("Sicherung eingelesen.");
+  } catch (e) {
+    alert("Die Datei konnte nicht gelesen werden: " + e.message);
+  } finally {
+    importFile.value = "";
+  }
+});
 
 // ==========================================
 // Helpers

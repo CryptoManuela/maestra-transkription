@@ -38,7 +38,7 @@ const DEFAULT_PROMPTS = [
     hint: "Jede Frage mit Antwort, nach Thema gruppiert. Für abwesende Teilnehmerinnen.",
     prompt: `AUFGABE: Fasse das Transkript dieses Q&A-Calls so zusammen, dass eine abwesende Teilnehmerin jede Frage mit Antwort nachlesen kann.
 
-KONTEXT: [WORUM GING ES / DEIN ANGEBOT]. Zielgruppe: [ZIELGRUPPE] – sie will die anwendbare Essenz, kein Protokoll.
+KONTEXT: Eine Teilnehmerin, die nicht dabei war, will die anwendbare Essenz nachlesen – kein Protokoll.
 
 GRENZEN: Nur Inhalte aus dem Transkript, im Zweifel weglassen. Wissen direkt formulieren, nicht nacherzählen ("Manuela erklärt, dass …" raus).
 
@@ -56,7 +56,7 @@ QUALITÄT: Fragen nach Thema gruppieren, jede als "F: …" mit direkter Antwort.
     hint: "Strukturierte 10-Punkte-Notiz fürs CRM. Interne Gedankenstütze, kein schöner Text.",
     prompt: `AUFGABE: Erstelle aus dem Transkript eine strukturierte Gesprächsnotiz – eine Gedankenstütze für mich, damit ich beim nächsten Kontakt sofort anknüpfen kann. Kein schön geschriebener Text.
 
-KONTEXT: Interne Notiz nur für mich. Mein Background: [EIN SATZ ÜBER DICH]. Trenne sauber, wer was gesagt hat – meine Aussagen nie der Gesprächspartnerin zuschreiben. Name der Gesprächspartnerin: {{kontakt}} – steht dort "(nicht angegeben)", nimm den Namen aus dem Gespräch.
+KONTEXT: Interne Notiz nur für mich. Trenne sauber, wer was gesagt hat – meine Aussagen nie der Gesprächspartnerin zuschreiben. Name der Gesprächspartnerin: {{kontakt}} – steht dort "(nicht angegeben)", nimm den Namen aus dem Gespräch.
 
 GRENZEN: Übernimm nur, was wirklich gesagt wurde. Nichts ergänzen, nichts interpretieren. Punkte, die nicht vorkamen, mit "—" markieren – nie mit Vermutung füllen. Keine Zahl, kein Preis, kein Name geraten.
 
@@ -104,40 +104,6 @@ QUALITÄT (Struktur):
 - Tipps & Tools (nur mit Begründung, nie nackte Tool-Namen)
 - Dein nächster Schritt (nur, was ich als Hausaufgabe genannt habe; sonst weglassen)
 - Signatur: {{signatur}}`,
-  },
-  {
-    id: "shownotes",
-    title: "Aufnahme → Podcast-Shownotes",
-    hint: "Feste Shownotes-Struktur, damit alle Folgen gleich aussehen.",
-    prompt: `AUFGABE: Schreib aus dem Transkript meiner Folge "[TITEL]" die Shownotes – immer in genau dieser Struktur, damit alle Folgen gleich aussehen.
-
-KONTEXT: Leserinnen entscheiden anhand der Shownotes, ob sie reinhören. Mein Podcast: [KURZ]. Gast dieser Folge: [NAME + WAS ER/SIE MACHT].
-
-GRENZEN: Nur Inhalte aus der Folge, keine erfundenen Aussagen oder Zitate. Zeitmarken nur, wenn sie im Transkript stehen.
-
-QUALITÄT (feste Struktur, immer gleich):
-1. Titel der Folge
-2. Kurzbeschreibung, 3-4 Sätze, die neugierig macht
-3. Über den Gast: ein, zwei Sätze
-4. Wichtigste Themen als Punkte, mit Zeitmarke wenn vorhanden
-5. Drei prägnante Zitate wörtlich aus der Folge
-6. Links: [WEBSITE UND SOCIAL-MEDIA-KANÄLE EINTRAGEN]
-7. Call-to-Action: [WAS DIE HÖRERIN ALS NÄCHSTES TUN SOLL]`,
-  },
-  {
-    id: "multi-channel",
-    title: "Aufnahme → Content für 3 Kanäle",
-    hint: "Ein Transkript, drei Formate: LinkedIn-Post, Newsletter-Abschnitt, Blog-Entwurf.",
-    prompt: `AUFGABE: Mach aus dieser Aufnahme Content für drei Kanäle:
-1) einen LinkedIn-Post mit einem starken ersten Satz,
-2) einen kurzen Newsletter-Abschnitt,
-3) einen Blog-Artikel-Entwurf.
-
-KONTEXT: Zielgruppe: [KURZ]. Schreib in meiner Stimme (siehe oben).
-
-GRENZEN: Inhalte nur aus der Aufnahme. Pro Kanal die passende Länge.
-
-QUALITÄT: Jeder Text muss für sich allein funktionieren und nach mir klingen, nicht nach KI. Am Ende je ein konkreter Gedanke, was die Leserin tun kann.`,
   },
 ];
 

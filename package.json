@@ -1,0 +1,9 @@
+{
+  "name": "maestra-transkription",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Maestra Transkriptions-App – Teilnehmer-Vorlage (fal-only, PWA, Prompt-Manager mit Server-Speicher).",
+  "dependencies": {
+    "@netlify/blobs": "^10.7.9"
+  }
+}
